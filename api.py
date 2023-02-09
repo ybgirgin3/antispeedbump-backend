@@ -1,19 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from utils import _get_from_another
 from utils import _post_content
 
-from pydantic import BaseModel
-
-
-class GetFromAnother(BaseModel):
-    username: str
-    collect: bool
-
-
 api = FastAPI()
 origins = ["*"]
+
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 
 @api.get("/")
@@ -24,11 +25,13 @@ def home():
 
 
 @api.post("/get_from_another/")
-def get_from_another(get_from_another: GetFromAnother):
+async def get_from_another(req: Request):
     try:
+        get_from_another = await req.json()
         inf = _get_from_another(
-            username=get_from_another.username,
-            collect=get_from_another.collect)
+            username=get_from_another.get('username'),
+            collect=get_from_another.get('collect')
+            )
 
         ret = {
             "status": 200,
@@ -45,3 +48,13 @@ def post_content():
         return _post_content()
     except Exception as e:
         raise e
+
+
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(
+        "api:api",
+        host="127.0.0.1",
+        port=8000,
+        debug=True,
+    )
