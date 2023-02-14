@@ -28,7 +28,7 @@ def _post_content():
     import json
 
     # read creds
-    with open('credientials.json') as f:
+    with open('src/credientials.json') as f:
         creds = json.loads(f.read())
 
     ret = Bot(
